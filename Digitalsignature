@@ -1,0 +1,62 @@
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.util.Scanner;
+
+public class CreatingDigitalSignature {
+    public static void main(String[] args) throws Exception {
+        // Accepting text from user
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter some text:");
+        String msg = sc.nextLine();
+        sc.close(); // Close scanner to prevent resource leak
+
+        // Creating KeyPair generator object
+        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("DSA");
+
+        // Initializing the key pair generator
+        keyPairGen.initialize(2048);
+
+        // Generate the pair of keys
+        KeyPair pair = keyPairGen.generateKeyPair();
+
+        // Getting the private and public keys
+        PrivateKey privKey = pair.getPrivate();
+        PublicKey pubKey = pair.getPublic();
+
+        System.out.println("Private Key: " + privKey);
+        System.out.println("Public Key: " + pubKey);
+
+        // Creating a Signature object
+        Signature sign = Signature.getInstance("SHA256withDSA");
+
+        // Initialize the signature for signing
+        sign.initSign(privKey);
+        sign.update(msg.getBytes());
+
+        // Calculating the signature
+        byte[] signature = sign.sign();
+
+        // Printing Signature to console
+        System.out.print("Digital Signature: ");
+        for (byte b : signature) {
+            System.out.print(String.format("%02x", b));
+        }
+        System.out.println();
+
+        // Initialize the signature for verification
+        sign.initVerify(pubKey);
+        sign.update(msg.getBytes());
+
+        // Verifying the signature
+        boolean isVerified = sign.verify(signature);
+
+        if (isVerified) {
+            System.out.println("Signature verified");
+        } else {
+            System.out.println("Signature verification failed");
+        }
+    }
+}
